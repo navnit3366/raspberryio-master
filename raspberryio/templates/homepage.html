@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load profile_tags %}
+{% load future project_tags mezzanine_tags compress cache %}
+
+
+{% block site_title %}Raspberry IO{% endblock %}
+
+{% block body_id %}homepage{% endblock %}
+
+{% block jumbotron %}
+<div class="homepage-hero-wrap">
+    <div class="container">
+        <div class="message">
+            <img src="{{ STATIC_URL }}img/razzy-large.png" alt="Hi! I am Razzy.">
+            <h1>Raspberry IO</h1>
+            <p>Create, Share, Learn, and Teach. Opening the circuitry of the mind with open culture, open source, Python, and the Raspberry Pi.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="homepage-content">
+    <div class="container">
+        <div class="row">
+            <div class="get-started">
+                <h2>Welcome to Raspberry IO!</h2>
+            {% if user.is_authenticated %}
+                <p>Raspberry IO is a collection of Raspberry Pi projects, ideas and a community to share your work. Take a look at some of the latest creations by our talented users!</p>
+                <a href="{% url 'project-list' %}">Start Exploring &rarr;</a>
+            {% else %}
+                <p>Raspberry IO is a collection of Raspberry Pi projects, ideas and a community to share your work. Sign up to submit your latest creation!</p>
+                <a href="{% url 'page' 'about-raspberry-io' %}">About Raspberry IO &rarr;</a>
+            {% endif %}
+            </div>
+        </div>
+        {% cache 1440 active_users %}
+            <div class="row">
+                <div class="featured">
+                <hr>
+                {% featured_projects 1 %}
+                {% for featured in featured_projects %}
+                    <div class="project">
+                        <h3>Featured Project</h3>
+                        <p>{{ featured.project.title }}</p>
+                        <a href="{% url 'project-detail' featured.project.slug %}"><img src="{{ MEDIA_URL }}{% thumbnail featured.photo.url 800 400 %}" alt="{{ featured.project.title }}"/></a>
+                    </div>
+                    </a>
+                {% empty %}
+                    <div class="project">
+                        <h3>Featured Project</h3>
+                        <p>Featured Project name goes here.</p>
+                        <a href="#"><img src="http://placekitten.com/800/400"></a>
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+
+            {% if active_users %}
+                <div class="row">
+                    <div class="active-users hidden-phone">
+                        <hr>
+                       <h3>Most Active Users</h3>
+                       <ul>
+                       {% for user in active_users %}
+                           <li class="span2">
+                               <a href="{% url 'profile' user %}">{% avatar user.get_profile 200 %}
+                                   {{ user.username }}</a>
+                           </li>
+                       {% endfor %}
+                       </ul>
+                    </div>
+                </div>
+            {% endif %}
+        {% endcache %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    {% if debug %}
+        <script src="{{ STATIC_URL }}js/libs/jquery.stickyPanel.min.js"></script>
+    {% else %}
+        {% compress js %}
+            <script src="{{ STATIC_URL }}js/libs/jquery.stickyPanel.min.js"></script>
+        {% endcompress %}
+    {% endif %}
+    <script>
+        $(function () {
+            var $window = $(window);
+            function checkWidth() {
+                var windowsize = $window.width();
+                if (windowsize > 767) {
+                    var stickyPanelOptions = {
+                        afterDetachCSSClass: "",
+                        savePanelSpace: true
+                    };
+                    $("#global-nav").stickyPanel(stickyPanelOptions);
+                }
+            }
+            checkWidth();
+            $(window).resize(checkWidth);
+        });
+    </script>
+{% endblock %}

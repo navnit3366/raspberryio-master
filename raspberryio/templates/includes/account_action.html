@@ -1,0 +1,48 @@
+{% load i18n future%}
+{% load mezzanine_tags %}
+{% load profile_tags %}
+
+{% with action.actor.get_profile as profile %}
+    <a class="avatar" href="{{ action.actor.get_absolute_url }}">
+        {% avatar profile 40 %}
+    </a>
+{% endwith %}
+
+{% if action.actor.get_absolute_url %}
+	<a href="{{ action.actor.get_absolute_url }}">
+        {% if action.actor == request.user %}
+        You
+        {% else %}
+        {{ action.actor }}
+        {% endif %}
+    </a>
+{% else %}
+	<a href="{{ action.actor_url }}">
+        {{ action.actor }}
+    </a>
+{% endif %}
+
+{{ action.verb }}
+
+{% if action.action_object %}
+    {% if action.action_object.get_absolute_url %}
+    	<a href="{{ action.action_object.get_absolute_url }}">
+    		{{ action.action_object|truncatechars:"30" }}
+    	</a>
+    {% else %}
+    	<a href="{{ action.action_object_url }}">{{ action.action_object }}</a>
+    {% endif %}
+    in
+{% endif %}
+
+{% if action.target %}
+    {% if action.target.get_absolute_url %}
+    	<a href="{{ action.target.get_absolute_url }}">{{ action.target|truncatechars:"50" }}</a>
+    {% elif action.target.urlpath_set %}
+        <a href="{% url 'wiki:get' action.target.id %}">{{ action.target|truncatechars:"50" }}</a>
+    {% else %}
+        <a href="{{ action.target_url }}">{{ action.target|truncatechars:"50" }}</a>
+    {% endif %}
+{% endif %}
+
+<p class="time">{{ action.timestamp|timesince }} {% trans "ago" %}</p>

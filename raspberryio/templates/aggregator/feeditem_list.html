@@ -1,0 +1,46 @@
+{% extends "aggregator/base.html" %}
+{% load i18n mezzanine_tags %}
+
+{% block meta_title %}Community posts for {{ feed_type.name }}{% endblock %}
+{% block title %}Community posts for {{ feed_type.name }}{% endblock %}
+{% block body_id %}community-posts{% endblock %}
+
+{% block main %}
+<header>
+    <h2>Community posts for {{ feed_type.name }}
+        <a class="rss" href="{% url aggregator-feed feed_type.slug %}">
+            <img src="{{ STATIC_URL }}img/feed-icon.png" width="25">
+        </a>
+    </h2>
+    <p class="alert alert-info">
+        This page, updated regularly, aggregates posts from the {{ feed_type.name }} community.
+    </p>
+</header>
+
+{% if is_paginated %}
+    {% include "includes/pagination.html" %}
+{% endif %}
+
+<div class="item-list">
+    {% for item in object_list %}
+        <article>
+            <section>
+                <a href="{{ item.link }}"><h4>{{ item.title }}</h4></a>
+                <p>Posted on {{ item.date_modified|date:"F j, Y" }} at {{ item.date_modified|date:"g:i A" }} by
+                    <a class="rss" href="{{ item.feed.feed_url }}">
+                        {{ item.feed.title }}
+                        <img src="{{ STATIC_URL }}img/feed-icon.png" width="15">
+                    </a>
+                </p>
+                {{ item.summary|safe|truncatewords:"100" }}
+                <p><a class="more" href="{{ item.link }}">Read more</a></p>
+            </section>
+        </article>
+    {% endfor %}
+</div>
+
+{% if is_paginated %}
+    {% include "includes/pagination.html" %}
+{% endif %}
+
+{% endblock %}

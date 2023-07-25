@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n future mezzanine_tags %}
+{% load profile_tags %}
+
+{% block meta_title %}Site Users{% endblock %}
+{% block title %}Site Users{% endblock %}
+{% block body_id %}account{% endblock %}
+{% block body_class %}user-listing{% endblock %}
+
+{% block main %}
+<div class="row">
+  {% if users.has_other_pages %}
+      {% include "includes/pagination.html" with page_obj=users %}
+  {% endif %}
+</div>
+{% for user in users %}
+<div class="row">
+    <div class="span2">
+        {% with user.get_profile as profile %}
+            {% avatar profile 150 %}
+        {% endwith %}
+        <div class="user-info">
+            <a href="{{ user.get_absolute_url }}">{{ user.username }}</a>
+            {% include 'includes/relationship-status.html' with profile_user=user %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+<div class="row">
+  {% if users.has_other_pages %}
+    {% include "includes/pagination.html" with page_obj=users %}
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ STATIC_URL }}js/update_relationship.min.js"></script>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% load url from future %}
+{% load mezzanine_tags %}
+
+<div class="gallery-display">
+    {% if projects %}
+    <div class="gallery">
+        <div id="slider" class="swipe">
+          <ul class="swipe-wrap">
+            {% if request.user == profile_user %}
+            <li class="add span3">
+                <a href="{% url 'project-create-edit' %}">
+                    <img src="{{ STATIC_URL }}img/add-project.png" alt="Add a project" />
+                </a>
+            </li>
+            {% endif %}
+            {% for project in projects %}
+            <li class="span3">
+                <a href="{% url 'project-detail' project.slug %}">
+                    {% if project.featured_photo %}
+                        <img src="{{ MEDIA_URL }}{% thumbnail project.featured_photo.url 500 400 %}" alt="{{ project.title }}"/>
+                    {% else %}
+                        <img src="{{ STATIC_URL }}img/no-featured-photo.png" alt="{{ project.title }}" width="500" />
+                    {% endif %}
+                </a>
+                <div class="details">
+                    <h4>{{ project.title }}</h4>
+                    <p><a href="{% url 'profile' project.user.username %}">{{ project.user }}</a></p>
+                </div>
+            </li>
+            {% endfor %}
+           
+          </ul>
+        </div>
+        <nav>
+            <a class="arrow" onclick="mySwipe.prev()" id="prev" href="javascript:void(0)"><</a>
+            <a class="arrow" onclick="mySwipe.next()" id="next" href="javascript:void(0)">></a>
+        </nav>
+    </div>
+    <ul class="tiled">
+        {% if request.user == profile_user %}
+        <li class="add span3">
+            <a href="{% url 'project-create-edit' %}"><img src="{{ STATIC_URL }}img/add-project.png" alt="Add a project" /></a>
+        </li>
+        {% endif %}
+        {% for project in projects %}
+        <li class="span3">
+            <a href="{% url 'project-detail' project.slug %}">
+                {% if project.featured_photo %}
+                    <img src="{{ MEDIA_URL }}{% thumbnail project.featured_photo.url 500 400 %}" alt="{{ project.title }}"/>
+                {% else %}
+                    <img src="{{ STATIC_URL }}img/no-featured-photo.png" alt="{{ project.title }}" width="400" />
+                {% endif %}
+            </a>
+            <div class="details">
+                <h4>{{ project.title|truncatechars:"25" }}</h4>
+                <p><a href="{% url 'profile' project.user.username %}">{{ project.user }}</a></p>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="span12">
+        {% if request.user == profile_user %}
+            <a href="{% url 'project-create-edit' %}"><img src="{{ STATIC_URL }}img/add-project.png" alt="Add a project" /></a>
+        {% else %}
+                <h2>There are no projects.</h2>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>

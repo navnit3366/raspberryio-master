@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% load i18n future mezzanine_tags profile_tags %}
+
+{% block meta_title %}{% trans "Search Results" %}{% endblock %}
+{% block title %}{% trans "Search Results" %}{% endblock %}
+
+{% block body_id %}search-results{% endblock %}
+
+{% block main %}
+<header>
+    <h2>Search results</h2>
+    <p class="lead">
+        {% if results.paginator.count == 0 %}
+            No results were found {% if search_type != "Everything" %} in {{ search_type }} {% endif %}matching your query: {{ query }}
+        {% else %}
+            Found {{ results.paginator.count }} results for <span>"{{ query }}"</span>
+            {% if search_type != "Everything" %} 
+                in <span>{{ search_type }}</span> 
+            {% endif %}
+        {% endif %}
+    </p>
+</header>
+
+{% pagination_for results %}
+
+<div class="item-list">
+    {% for result in results.object_list %}
+    <a class="article-link" href="{{ result.get_absolute_url }}">
+        <article>
+            {% if result.profile %}
+                {% avatar result.profile 75%}
+            {% endif %}
+            {% if result.tldr %}
+                {% if result.featured_photo %}
+                    <img src="{{ MEDIA_URL }}{% thumbnail result.featured_photo.url 75 75 %}" alt="{{ result.title }}" />
+                {% else %}
+                    <img src="{{ STATIC_URL }}img/no-featured-photo.png" alt="{{ project.title }}" width="75" />
+                {% endif %}
+            {% endif %}
+            <section>
+                <h4>
+                {# Human readable type and title #}
+                {% if search_type == "Everything" %}
+                    {{ result.search_classname|capfirst }} - 
+                {% endif %}
+                {{ result }}
+                </h4>
+                {# Use the content body for the given object, truncate it, and escape html if needed #}
+                <p>
+                {% if result.description %}
+                    {{ result.description|striptags|truncatewords:50 }}
+                {% elif result.profile.bio %}
+                    {{ result.profile.bio|truncatewords:50 }}
+                {% elif result.content and result.search_classname == 'Project Step' %}
+                    {{ result.content|striptags|truncatewords:50 }}
+                {% elif result.content and result.search_classname != 'Project Step' %}
+                    {{ result.content|truncatewords:50 }}
+                {% elif result.answer %}
+                    {{ result.answer|striptags|truncatewords:50 }}
+                {% endif %}
+                </p>
+            </section>
+        </article>
+    </a>
+    {% endfor %}
+</div>
+
+{% pagination_for results %}
+{% endblock %}

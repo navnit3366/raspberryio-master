@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n mezzanine_tags %}
+{% load url from future %}
+
+{% block meta_title %}Community{% endblock %}
+{% block body_id %}community-home{% endblock %}
+
+{% block main %}
+<h2>Community</h2>
+<div class="item-list row">
+    <div class="feed span6">
+        <header>
+            <h3>Posts for 
+                <a href="{% url 'community-feed-list' feed_type.slug %}">{{ feed_type }}</a> 
+                <a class="rss" href="{% url 'aggregator-feed' feed_type.slug %}">
+                    <img src="{{ STATIC_URL }}img/feed-icon.png" width="20"> RSS</a>
+            </h3>
+            <p>These are a few blog posts collected around the interwebs about {{ feed_type }}. If you have one you would like to add, <a href="{% url 'community-add-feed' feed_type.slug %}">please fill out this form.</a></p>
+        </header>
+        {% for item in feed_items|slice:"5" %}
+            <a class="article-link" href="{{ item.link }}">
+                <article>
+                    <section>
+                        <h4>{{ item.title }}</h4>
+                        <p>Posted on {{ item.date_modified|date:"F j, Y" }} at {{ item.date_modified|date:"g:i A" }}</p>
+                    </section>
+                </article>
+            </a>
+            
+        {% empty %}
+            <p>No recent posts.</p>
+        {% endfor %}
+        {% if feed_items.count >= 5 %}
+            <a class="more" href="{% url 'community-feed-list' feed_type.slug %}">See all posts &rarr;</a>
+       {% endif %}
+    </div>
+
+    <div class="qanda span5 offset1">
+        <h3><a href="{% url 'question-list' %}">Questions &amp; Answers</a><a class="ask" href="{% url 'question-create-edit' %}">Ask a question</a></h3>
+        {% for question in questions|slice:"5" %}
+            <a class="article-link" href="{% url 'question' question.slug %}">
+                <article>
+                    <section>
+                        <h4>{{ question.title }}</h4>
+                        <p>Posted on {{ question.publish_date|date:"F j, Y" }} at {{ question.publish_date|date:"g:i A" }}</p>
+                    </section>
+                </article>
+            </a>
+        {% empty %}
+            <p>No questions have been asked.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% load bootstrap_toolkit %}
+{% load cache %}
+
+{% block body_id %}project-create-edit{% endblock %}
+
+{% block main %}
+<h2>Create your project</h2>
+<form class="project-create-edit-form" action="" method="post" accept-charset="utf-8" enctype="multipart/form-data">{% csrf_token %}
+    {% if project.id or project_form.errors %}
+        {{ project_form|as_bootstrap }}
+        {{ project_form.media }}
+    {% else %}
+        {% cache 10800 create-project %}
+            {{ project_form|as_bootstrap }}
+            {{ project_form.media }}
+        {% endcache %}
+    {% endif %}
+   
+    <div class="project-steps">
+    {% if not project.id %}
+        <h4>Are there steps in your project?</h4>
+        <input type="submit" name="save-add-step" value="Save &amp; add project steps" />
+    {% else %}
+        <h4>Edit your steps</h4>
+        {% for step in project.steps.all %}
+            <a class="edit" href="{% url 'project-step-create-edit' project.slug step.order %}">
+                <i class="icon-edit icon-white"></i> Step {{ step.order|add:"1" }}: {{ step.title }}
+            </a><br>
+        {% endfor %}
+        {% if project.steps.count < 20 %}
+            <a class="create" href="{% url 'project-step-create-edit' project.slug %}"><i class="icon-plus icon-white"></i>Create a new project step</a>
+        {% endif %}
+    {% endif %} 
+    </div>
+
+    <div class="form-actions">
+        <input type="submit" name="save" value="Save {% if not project.is_published%}&amp; preview{% endif %}" />
+        <input type="button" class="cancel" name="cancel" value="Cancel" onclick="history.go(-1);" />
+    </div>
+</form>
+{% endblock %}

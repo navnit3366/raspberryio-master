@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load sekizai_tags i18n %}{% load url from future %}
+
+{% block body_class %}wiki{% endblock %}
+
+{% block meta_title %}
+  {% block pagetitle %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+  {% block wiki_body %}
+
+    <div class="container" style="margin-top: 60px;">
+      {% block wiki_breadcrumbs %}{% endblock %}
+      {% block wiki_contents %}
+      <h1>Bootstrap starter template</h1>
+      <p>Use this document as a way to quick start any new project.<br> All you get is this message and a barebones HTML document.</p>
+      {% endblock %}
+
+      <footer id="wiki-footer">
+        {% block wiki_footer_logo %}
+        {% endblock %}
+        {% block wiki_footer_prepend %}
+        {% endblock %}
+        <div style="clear: both"></div>
+      </footer>
+    </div>
+
+  </div> <!-- /container -->
+
+  {% endblock %}
+  {% addtoblock "js" %}
+    <script src="{{ STATIC_URL }}wiki/js/core.js"></script>
+  {% endaddtoblock %}
+{% endblock %}

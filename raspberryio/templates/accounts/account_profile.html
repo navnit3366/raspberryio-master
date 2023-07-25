@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load i18n future mezzanine_tags relationship_tags %}
+{% load profile_tags %}
+
+{% block meta_title %}{{ profile_user.username }}{% endblock %}
+{% block title %}{{ profile_user.username }}{% endblock %}
+{% block body_id %}account{% endblock %}
+{% block body_class %}profile{% endblock %}
+
+{% block main %}
+<div class="row">
+    <div class="user-profile span12">
+        <div class="top"></div>
+        <h2>{{ profile_user.get_full_name }}
+            <span>{{ profile_user.username }}</span>
+        </h2>
+        {% with profile_user.get_profile as profile %}
+        <div class="avatar span3">
+            {% avatar profile 250 %}
+            <ul>
+                {% if request.user.is_authenticated %}
+                    <li>{% include 'includes/relationship-status.html' %}</li>
+                {% endif %}
+                {% if profile.website or profile.twitter_id %}
+                <li>
+                    <a class="twitter" href="http://twitter.com/{{ profile_user.get_profile.twitter_id }}">
+                        @{{ profile_user.get_profile.twitter_id }}
+                    </a>
+                </li>
+                <li>
+                    <a class="url" href="{{ profile_user.get_profile.website }}">
+                        {{ profile_user.get_profile.website }}
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+        </div>
+        {% if profile.bio %}
+            <div class="bio span5">
+                <h3>About</h3>
+                <p>{{ profile.bio }}</p>
+            </div>
+        {% endif %}
+        {% comment %}
+        <a href="{% url 'profile-actions' profile_user.username %}">Activity Stream</a>
+        {% endcomment %}
+        <div class="stats span3">
+            <h3>Stats</h3>
+            <ul class="nav nav-tabs nav-stacked">
+                <li class="projects">Public projects: {{ profile_user.projects.published.count }}</li>
+                <li><a href="{% url 'profile-related' username=profile_user relation='followers' %}">Followers: <span id="followers" data-followers="{{ profile_user.username|followers }}">{{ profile_user.username|followers }}</span></a></li>
+                <li><a href="{% url 'profile-related' username=profile_user relation='following' %}">Following: <span id="following" data-following="{{ profile_user.username|following }}">{{ profile_user.username|following }}</span></a></li>
+            </ul>
+        </div>
+        {% endwith %}
+    </div>
+</div>
+
+<div class="row">
+    {% if request.user == profile_user %}
+        {% with profile_user.projects.all as projects %}
+            {% include 'includes/project-gallery.html' %}
+        {% endwith %}
+    {% else %}
+        {% with profile_user.projects.published as projects %}
+            {% include 'includes/project-gallery.html' %}
+        {% endwith %}
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% if projects %}
+{% block extra_js %}
+	<script src="{{ STATIC_URL }}js/update_relationship.min.js"></script>
+    <script src="{{ STATIC_URL }}js/libs/swipe.js"></script>
+    <script>
+
+    $('#slider').Swipe();
+    window.mySwipe = $('#slider').data('Swipe');
+
+    </script>
+{% endblock %}
+{% endif %}

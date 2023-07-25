@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+{% load pages_tags mezzanine_tags sekizai_tags i18n future %}
+{% load cache %}
+<html lang="en">
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="{% block meta_keywords %}{% endblock %}">
+    <meta name="description" content="{% block meta_description %}{% endblock %}">
+    {% block extra-meta %}{% endblock %}
+
+    <title>{% block meta_title %}{% endblock %} : {% block site_title %}{{ settings.SITE_TITLE }}{% endblock %}</title>
+
+    <link rel="shortcut icon" href="{{ STATIC_URL }}img/favicon.ico">
+    <link rel="apple-touch-icon" href="{{ STATIC_URL }}img/apple-touch-icon.png">
+
+    {% if debug %}
+        <link rel="stylesheet/less" type="text/css" media="all" href="{{ STATIC_URL }}less/site.less">
+        <script src="{{ STATIC_URL }}js/libs/less-1.3.3.min.js"></script>
+    {% else %}
+        {% compress css %}
+            <link rel="stylesheet" type="text/less" media="all" href="{{ STATIC_URL }}less/site.less">
+        {% endcompress %}
+    {% endif %}
+
+    {# FIXME: consolidate sekizai render_block needed for wiki with above css #}
+    {% render_block "css" %}
+
+    <!--[if lt IE 9]>
+    <script src="{{ STATIC_URL }}js/html5shiv.js"></script>
+    <![endif]-->
+
+    <script src="{{ STATIC_URL }}js/libs/modernizr-2.5.3.js"></script>
+
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-38295988-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+
+</head>
+
+<body id="{% block body_id %}{% endblock %}" class="{% block body_class %}{% endblock %}">
+
+<div id="page">
+{% block page %}
+    {% spaceless %}
+    {% block jumbotron %}{% endblock %}
+
+    {% block global_nav %}
+        {% cache 1800 globalnav request.user %}
+            <div id="global-nav" class="navbar navbar-static-top">
+                <div class="navbar-inner">
+                    <div class="container">
+                        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </a>
+                        <a class="brand" href="/">
+                            <img src="{{ STATIC_URL }}img/razzy-head.png" alt="Razzy head" width="20"> 
+                            {{ settings.SITE_TITLE }}
+                        </a>
+                        <div class="nav-collapse collapse">
+                            <div class="right-block">
+                                <ul class="nav">
+                                    {% if request.user.is_authenticated %}
+                                        <li class="dropdown">
+                                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Hi {{ request.user }}!<b class="caret"></b></a>
+                                            <ul class="dropdown-menu">
+                                                <li><a href="{% url 'profile-dashboard' %}">My Dashboard</a></li>
+                                                <li><a href="{% url 'profile' user.username %}">My Profile</a></li>
+                                                <li><a href="{% url 'profile_update' %}">Edit Profile</a></li>
+                                                <li><a href="{% url 'project-create-edit' %}">Create new project</a></li>
+                                                {% if user.get_profile.feed_owner %}
+                                                    <li><a href="{% url 'community-my-feeds' %}">Edit blog feeds</a></li>
+                                                {% endif %}
+                                            </ul>
+                                        </li>
+                                    {% endif %}
+                                    <li class="visible-phone"><a href="{% url 'project-create-edit' %}">Create</a></li>
+                                    <li class="visible-phone"><a href="{% url 'project-list' %}">Explore</a></li>
+                                    <li class="visible-phone"><a href="{% url 'wiki:root' %}">Learn</a></li>
+                                    <li class="visible-phone"><a href="{% url 'community-index' %}">Community</a></li>
+                                    {% if request.user.is_authenticated %}
+                                        <li><a href="{% url 'logout' %}">Log Out</a></li>
+                                    {% else %}
+                                        <li><a href="{% url 'login' %}">Log In</a></li>
+                                        <li><a href="{% url 'signup' %}">Sign Up</a></li>
+                                    {% endif %}
+                                </ul>
+                                <form action="{% url 'search' %}" class="navbar-search">
+                                    <input type="text" name="q" class="search-query" placeholder="Search" 
+                                    {% if query %}
+                                        value="{{ query }}"
+                                    {% endif %}
+                                    >
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endcache %}
+    {% endblock %}
+
+    {% if page.title or messages %}
+    <header>
+    {% block header %}
+        <div class="container">
+            {% nevercache %}
+                {% for message in messages %}
+                    <div class="user-message alert alert-{{ message.tags }}" data-alert="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+                {% if page.title %}
+                    <h1>{% block title %}{% endblock %}</h1>
+                {% endif %}
+            {% endnevercache %}
+        </div>
+    {% endblock %}
+    </header>
+    {% endif %}
+
+    {% block content %}
+        <div class="container">
+            <div id="content">
+            {% block main %}{% endblock %}
+            </div>
+        </div>
+    {% endblock %}
+
+    <div id="push"></div>
+
+    {% block navbar %}
+        {% cache 1800 footer %}
+            <div id="footer-nav" class="navbar navbar-fixed-bottom hidden-phone">
+                <div class="navbar-inner">
+                    <div class="container">
+                        <ul class="nav">
+                            <li class="create"><a href="{% url 'project-create-edit' %}">Create</a></li>
+                            <li class="explore"><a href="{% url 'project-list' %}">Explore</a></li>
+                            <li class="about">
+                                <div class="tabWrapper">
+                                    <a class="tab" href="#">
+                                        <img src="{{ STATIC_URL }}img/razzy-small.png" alt="About Raspberry IO" width="50" height="60">
+                                    </a>
+                                    <div class="tabContent">
+                                        <h4>Raspberry IO</h4>
+                                        Create, Share, Learn, and Teach. Opening the circuitry of the mind with open culture, open source, Python, and the Raspberry Pi. <a href="{% url 'page' 'about-raspberry-io' %}">Learn more &rarr;</a>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="learn"><a href="{% url 'wiki:root' %}">Learn</a></li>
+                            <li class="community"><a href="{% url 'community-index' %}">Community</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <footer>
+                    {% block footer %}
+                    <ul class="container">
+                      <li><a href="https://twitter.com/raspberryio" class="twitter-follow-button" data-show-count="false">Follow @raspberryio</a></li>
+                      <li>&copy;{% now "Y" %} <a href="http://www.python.org/psf/">Python Software Foundation</a></li>
+                    </ul>
+                    {% page_menu "pages/menus/dropdown.html" %}
+                    {% endblock %}
+                </footer>
+            </div>
+        {% endcache %}
+    {% endblock %}
+    {% endspaceless %}
+{% endblock %}
+</div>
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+{% include "includes/footer_scripts.html" %}
+<script src="{{ STATIC_URL }}js/libs/bootstrap.min.js"></script>
+
+
+{% if debug %}
+    <script src="{{ STATIC_URL }}js/site.js"></script>
+    {% else %}
+        {% compress js %}
+            <script src="{{ STATIC_URL }}js/site.js"></script>
+        {% endcompress %}
+{% endif %}
+
+{% block extra_js %}{% endblock %}
+
+{% render_block "js" %}
+
+<script type="text/javascript">
+  var uvOptions = {};
+  (function() {
+    var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
+    uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/xO0Kz9W86KwsD0bRPdwMw.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
+  })();
+</script>
+</body>
+</html>
